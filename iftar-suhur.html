@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>رَمَضان جدول</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            direction: rtl;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #f6d365, #fda085);
+            color: #333;
+        }
+        header {
+            background: url('https://via.placeholder.com/1200x400?text=Ramadan+Kareem') no-repeat center center/cover;
+            padding: 20px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        header img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid white;
+        }
+        header h1 {
+            margin: 10px 0 5px;
+            font-size: 24px;
+        }
+        header h2 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: normal;
+        }
+        table {
+            width: 90%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+        }
+        th {
+            background: #4CAF50;
+            color: white;
+            font-size: 16px;
+        }
+        td {
+            font-size: 14px;
+        }
+        button {
+            margin: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .loading {
+            font-size: 18px;
+            color: #555;
+        }
+        .location-info {
+            font-size: 16px;
+            color: #4CAF50;
+            margin: 10px 0;
+        }
+        .hidden {
+            display: none;
+        }
+        select {
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <img src="https://drive.google.com/file/d/1JgwLtsdo8eNYDjqhU5KLJRitLQbEVDjS/view?usp=drive_link" alt="Logo">
+        <h1 id="headerTitle">د روژه مات او پیشلمي وختونه</h1>
+        <h2 id="headerSubtitle">کال ۱۴۴۶ ه-ق</h2>
+    </header>
+
+    <button id="switchButton" onclick="switchPage()">د لمانځه وختونه</button>
+
+    <p id="locationInfo" class="loading">د موقعیت معلومات ترلاسه کول...</p>
+
+    <!-- Dropdown for manual city selection -->
+    <select id="cityDropdown" class="hidden" onchange="updateLocation()">
+        <option value="34.5553,69.2075">کابل</option>
+        <option value="31.6306,65.7251">قندهار</option>
+        <option value="34.5167,69.1833">هرات</option>
+        <option value="36.7281,68.8685">مزار شریف</option>
+        <option value="34.8417,67.2304">بامیان</option>
+        <option value="35.1183,69.2378">پل خمری</option>
+        <option value="34.2304,62.1928">غزنی</option>
+        <option value="34.3401,62.1999">فراه</option>
+        <option value="35.9446,68.7151">کندز</option>
+        <option value="32.6295,65.8781">لشکرگاه</option>
+    </select>
+
+    <!-- Ramadan Table Page -->
+    <div id="ramadanPage">
+        <table id="ramadanTable">
+            <thead>
+                <tr>
+                    <th id="dayHeader">ورځ</th>
+                    <th id="suhurHeader">پیشلمی</th>
+                    <th id="iftarHeader">روژه مات</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Rows will be populated by JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Prayer Times Page -->
+    <div id="prayerPage" class="hidden">
+        <table id="prayerTable">
+            <thead>
+                <tr>
+                    <th id="prayerDayHeader">ورځ</th>
+                    <th id="fajrHeader">فجر</th>
+                    <th id="dhuhrHeader">ظهر</th>
+                    <th id="asrHeader">عصر</th>
+                    <th id="maghribHeader">مغرب</th>
+                    <th id="ishaHeader">عشاء</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Rows will be populated by JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const data = {
+            pashto: {
+                ramadanTitle: "د روژه مات او پیشلمي وختونه",
+                prayerTitle: "د لمانځه وختونه",
+                headerSubtitle: "کال ۱۴۴۶ ه-ق",
+                day: "ورځ",
+                suhur: "پیشلمی",
+                iftar: "روژه مات",
+                fajr: "فجر",
+                dhuhr: "ظهر",
+                asr: "عصر",
+                maghrib: "مغرب",
+                isha: "عشاء",
+                locationMessage: "د موقعیت معلومات ترلاسه کول...",
+                switchToPrayer: "د لمانځه وختونه",
+                switchToRamadan: "د روژه مات او پیشلمي وختونه"
+            },
+            dari: {
+                ramadanTitle: "اوقات افطار و سحری",
+                prayerTitle: "اوقات نماز",
+                headerSubtitle: "سال ۱۴۴۶ ه-ق",
+                day: "روز",
+                suhur: "سحری",
+                iftar: "افطار",
+                fajr: "فجر",
+                dhuhr: "ظهر",
+                asr: "عصر",
+                maghrib: "مغرب",
+                isha: "عشاء",
+                locationMessage: "دریافت اطلاعات موقعیت...",
+                switchToPrayer: "اوقات نماز",
+                switchToRamadan: "اوقات افطار و سحری"
+            }
+        };
+
+        const cities = {
+            "34.5553,69.2075": "کابل",
+            "31.6306,65.7251": "قندهار",
+            "34.5167,69.1833": "هرات",
+            "36.7281,68.8685": "مزار شریف",
+            "34.8417,67.2304": "بامیان",
+            "35.1183,69.2378": "پل خمری",
+            "34.2304,62.1928": "غزنی",
+            "34.3401,62.1999": "فراه",
+            "35.9446,68.7151": "کندز",
+            "32.6295,65.8781": "لشکرگاه"
+        };
+
+        let currentLanguage = "pashto";
+        let currentPage = "ramadan"; // Can be "ramadan" or "prayer"
+        let userLocation = { latitude: 34.5553, longitude: 69.2075 }; // Default to Kabul
+
+        // Function to fetch prayer times from Aladhan API
+        async function getPrayerTimes(latitude, longitude) {
+            const date = new Date();
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1; // Months are 0-indexed
+            const apiUrl = `https://api.aladhan.com/v1/calendar/${year}/${month}?latitude=${latitude}&longitude=${longitude}&method=2`;
+
+            try {
+                const response = await fetch(apiUrl);
+                const result = await response.json();
+                return result.data;
+            } catch (error) {
+                console.error("د دعا وختونو ترلاسه کولو کې ستونزه:", error);
+                return null;
+            }
+        }
+
+        // Function to populate the Ramadan table
+        async function populateRamadanTable() {
+            const tableBody = document.querySelector("#ramadanTable tbody");
+            const languageData = data[currentLanguage];
+            document.getElementById("headerTitle").innerText = languageData.ramadanTitle;
+            document.getElementById("headerSubtitle").innerText = languageData.headerSubtitle;
+            document.getElementById("dayHeader").innerText = languageData.day;
+            document.getElementById("suhurHeader").innerText = languageData.suhur;
+            document.getElementById("iftarHeader").innerText = languageData.iftar;
+
+            const prayerTimes = await getPrayerTimes(userLocation.latitude, userLocation.longitude);
+            if (!prayerTimes) {
+                document.getElementById("locationInfo").innerText = "د دعا وختونو ترلاسه کولو کې ستونزه.";
+                return;
+            }
+
+            tableBody.innerHTML = "";
+            prayerTimes.forEach((day, index) => {
+                const suhurTime = day.timings.Fajr.split(" ")[0]; // Fajr time is Suhur
+                const iftarTime = day.timings.Maghrib.split(" ")[0]; // Maghrib time is Iftar
+                const row = `<tr>
+                    <td>${index + 1}</td>
+                    <td>${suhurTime}</td>
+                    <td>${iftarTime}</td>
+                </tr>`;
+                tableBody.innerHTML += row;
+            });
+        }
+
+        // Function to populate the Prayer Times table
+        async function populatePrayerTable() {
+            const tableBody = document.querySelector("#prayerTable tbody");
+            const languageData = data[currentLanguage];
+            document.getElementById("headerTitle").innerText = languageData.prayerTitle;
+            document.getElementById("headerSubtitle").innerText = languageData.headerSubtitle;
+            document.getElementById("prayerDayHeader").innerText = languageData.day;
+            document.getElementById("fajrHeader").innerText = languageData.fajr;
+            document.getElementById("dhuhrHeader").innerText = languageData.dhuhr;
+            document.getElementById("asrHeader").innerText = languageData.asr;
+            document.getElementById("maghribHeader").innerText = languageData.maghrib;
+            document.getElementById("ishaHeader").innerText = languageData.isha;
+
+            const prayerTimes = await getPrayerTimes(userLocation.latitude, userLocation.longitude);
+            if (!prayerTimes) {
+                document.getElementById("locationInfo").innerText = "د دعا وختونو ترلاسه کولو کې ستونزه.";
+                return;
+            }
+
+            tableBody.innerHTML = "";
+            prayerTimes.forEach((day, index) => {
+                const fajrTime = day.timings.Fajr.split(" ")[0];
+                const dhuhrTime = day.timings.Dhuhr.split(" ")[0];
+                const asrTime = day.timings.Asr.split(" ")[0];
+                const maghribTime = day.timings.Maghrib.split(" ")[0];
+                const ishaTime = day.timings.Isha.split(" ")[0];
+                const row = `<tr>
+                    <td>${index + 1}</td>
+                    <td>${fajrTime}</td>
+                    <td>${dhuhrTime}</td>
+                    <td>${asrTime}</td>
+                    <td>${maghribTime}</td>
+                    <td>${ishaTime}</td>
+                </tr>`;
+                tableBody.innerHTML += row;
+            });
+        }
+
+        // Function to switch between Ramadan and Prayer Times pages
+        function switchPage() {
+            if (currentPage === "ramadan") {
+                currentPage = "prayer";
+                document.getElementById("ramadanPage").classList.add("hidden");
+                document.getElementById("prayerPage").classList.remove("hidden");
+                document.getElementById("switchButton").innerText = data[currentLanguage].switchToRamadan;
+                populatePrayerTable();
+            } else {
+                currentPage = "ramadan";
+                document.getElementById("prayerPage").classList.add("hidden");
+                document.getElementById("ramadanPage").classList.remove("hidden");
+                document.getElementById("switchButton").innerText = data[currentLanguage].switchToPrayer;
+                populateRamadanTable();
+            }
+        }
+
+        // Function to switch language
+        function switchLanguage() {
+            currentLanguage = currentLanguage === "pashto" ? "dari" : "pashto";
+            document.getElementById("locationInfo").innerText = data[currentLanguage].locationMessage;
+            if (currentPage === "ramadan") {
+                populateRamadanTable();
+            } else {
+                populatePrayerTable();
+            }
+            document.getElementById("switchButton").innerText = currentPage === "ramadan" ? data[currentLanguage].switchToPrayer : data[currentLanguage].switchToRamadan;
+        }
+
+        // Function to update location based on selected city
+        function updateLocation() {
+            const selectedValue = document.getElementById("cityDropdown").value;
+            const [latitude, longitude] = selectedValue.split(",");
+            userLocation.latitude = parseFloat(latitude);
+            userLocation.longitude = parseFloat(longitude);
+            document.getElementById("locationInfo").innerText = `موقعیت: ${cities[selectedValue]}`;
+            if (currentPage === "ramadan") {
+                populateRamadanTable();
+            } else {
+                populatePrayerTable();
+            }
+        }
+
+        // Function to get user location
+        function getUserLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        userLocation.latitude = position.coords.latitude;
+                        userLocation.longitude = position.coords.longitude;
+                        document.getElementById("locationInfo").innerText = `موقعیت: ${userLocation.latitude}, ${userLocation.longitude}`;
+                        populateRamadanTable();
+                    },
+                    (error) => {
+                        console.error("د موقعیت ترلاسه کولو کې ستونزه:", error);
+                        document.getElementById("locationInfo").innerText = "د موقعیت ترلاسه کولو کې ستونزه. د ښار انتخاب وکړئ.";
+                        document.getElementById("cityDropdown").classList.remove("hidden");
+                        populateRamadanTable();
+                    }
+                );
+            } else {
+                document.getElementById("locationInfo").innerText = "د موقعیت ملاتړ نشته. د ښار انتخاب وکړئ.";
+                document.getElementById("cityDropdown").classList.remove("hidden");
+                populateRamadanTable();
+            }
+        }
+
+        // Initialize app
+        getUserLocation();
+    </script>
+
+</body>
+</html>
