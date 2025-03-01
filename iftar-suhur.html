@@ -94,7 +94,7 @@
 <body>
 
     <header>
-        <img src="https://drive.google.com/file/d/1JgwLtsdo8eNYDjqhU5KLJRitLQbEVDjS/view?usp=drive_link" alt="Logo">
+        <img src="https://via.placeholder.com/80x80?text=Logo" alt="Logo">
         <h1 id="headerTitle">د روژه مات او پیشلمي وختونه</h1>
         <h2 id="headerSubtitle">کال ۱۴۴۶ ه-ق</h2>
     </header>
@@ -222,6 +222,19 @@
             }
         }
 
+        // Function to get location name using reverse geocoding
+        async function getLocationName(latitude, longitude) {
+            const apiUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`;
+            try {
+                const response = await fetch(apiUrl);
+                const result = await response.json();
+                return result.address.city || result.address.town || result.address.village || "نامعلوم";
+            } catch (error) {
+                console.error("د موقعیت نوم ترلاسه کولو کې ستونزه:", error);
+                return "نامعلوم";
+            }
+        }
+
         // Function to populate the Ramadan table
         async function populateRamadanTable() {
             const tableBody = document.querySelector("#ramadanTable tbody");
@@ -333,13 +346,14 @@
         }
 
         // Function to get user location
-        function getUserLocation() {
+        async function getUserLocation() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
-                    (position) => {
+                    async (position) => {
                         userLocation.latitude = position.coords.latitude;
                         userLocation.longitude = position.coords.longitude;
-                        document.getElementById("locationInfo").innerText = `موقعیت: ${userLocation.latitude}, ${userLocation.longitude}`;
+                        const locationName = await getLocationName(userLocation.latitude, userLocation.longitude);
+                        document.getElementById("locationInfo").innerText = `موقعیت: ${locationName}`;
                         populateRamadanTable();
                     },
                     (error) => {
